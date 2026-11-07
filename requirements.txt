@@ -1,0 +1,2 @@
+Cài đặt thư viện liên quan: pip install fastapi uvicorn
+Chạy ứng dụng: uvicorn main:app --reload
