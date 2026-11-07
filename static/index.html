@@ -38,6 +38,7 @@
         
         /* Hidden Tabs (Using Bootstrap Tab Logic but custom UI) */
         .tab-content { width: 100%; }
+        .search-box { max-width: 350px; } /* Mở rộng ô tìm kiếm để chứa nút */
     </style>
 </head>
 <body>
@@ -80,7 +81,7 @@
                             <div class="card">
                                 <div class="card-header text-primary"><i class="fa-solid fa-user-plus me-2"></i> <span id="studentFormTitle">Thêm Sinh Viên</span></div>
                                 <div class="card-body">
-                                    <form id="studentForm">
+                                    <form id="studentForm" onsubmit="event.preventDefault();">
                                         <div class="form-floating mb-3">
                                             <input type="text" class="form-control" id="stMssv" placeholder="MSSV" required>
                                             <label>Mã số sinh viên (MSSV)</label>
@@ -115,6 +116,12 @@
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <span><i class="fa-solid fa-list me-2"></i> Danh Sách Sinh Viên</span>
+                                    <!-- Ô TÌM KIẾM CÓ NÚT BẤM -->
+                                    <div class="input-group input-group-sm search-box">
+                                        <input type="text" id="searchStudent" class="form-control" placeholder="Nhập MSSV hoặc Tên..." onkeypress="if(event.key === 'Enter') loadStudents()">
+                                        <button class="btn btn-primary px-3" type="button" onclick="loadStudents()"><i class="fa-solid fa-magnifying-glass"></i> Tìm</button>
+                                        <button class="btn btn-outline-danger" type="button" onclick="clearStudentSearch()" title="Xóa bộ lọc"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="table-responsive">
@@ -146,7 +153,7 @@
                             <div class="card">
                                 <div class="card-header text-success"><i class="fa-solid fa-book-medical me-2"></i> <span id="subjectFormTitle">Thêm Môn Học</span></div>
                                 <div class="card-body">
-                                    <form id="subjectForm">
+                                    <form id="subjectForm" onsubmit="event.preventDefault();">
                                         <div class="form-floating mb-3">
                                             <input type="text" class="form-control" id="subId" placeholder="Mã Môn" required>
                                             <label>Mã Môn</label>
@@ -185,8 +192,14 @@
                         <!-- Data Grid -->
                         <div class="col-lg-9 col-md-8">
                             <div class="card">
-                                <div class="card-header">
+                                <div class="card-header d-flex justify-content-between align-items-center">
                                     <span><i class="fa-solid fa-list me-2"></i> Danh Sách Môn Học</span>
+                                    <!-- Ô TÌM KIẾM MÔN HỌC -->
+                                    <div class="input-group input-group-sm search-box">
+                                        <input type="text" id="searchSubject" class="form-control" placeholder="Tìm Tên môn hoặc Tín chỉ..." onkeypress="if(event.key === 'Enter') loadSubjects()">
+                                        <button class="btn btn-primary px-3" type="button" onclick="loadSubjects()"><i class="fa-solid fa-magnifying-glass"></i> Tìm</button>
+                                        <button class="btn btn-outline-danger" type="button" onclick="clearSubjectSearch()" title="Xóa bộ lọc"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="table-responsive">
@@ -230,10 +243,15 @@
 
     // ================= DATA LOADING =================
     async function loadSubjects() {
-        const res = await fetch('/api/subjects');
-        const subjects = await res.json();
-        const tbody = document.getElementById('subjectTableBody');
-        tbody.innerHTML = subjects.map(s => `
+        // Lấy giá trị ô tìm kiếm (nếu có, không có thì bỏ qua)
+        const searchInput = document.getElementById('searchSubject');
+        const q = searchInput ? searchInput.value : '';
+        const url = q ? `/api/subjects?q=${encodeURIComponent(q)}` : '/api/subjects';
+        
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        document.getElementById('subjectTableBody').innerHTML = data.map(s => `
             <tr style="cursor:pointer" onclick="selectSubject('${s.id}', '${s.name}', ${s.credits}, ${s.w_qt}, ${s.w_gk}, ${s.w_ck})">
                 <td><span class="badge bg-light text-dark border">${s.id}</span></td>
                 <td class="text-start fw-semibold text-primary">${s.name}</td>
@@ -244,18 +262,22 @@
     }
 
     async function loadStudents() {
-        const res = await fetch('/api/students');
-        const students = await res.json();
-        const tbody = document.getElementById('studentTableBody');
-        tbody.innerHTML = students.map(s => `
+        const searchInput = document.getElementById('searchStudent');
+        const q = searchInput ? searchInput.value : '';
+        const url = q ? `/api/students?q=${encodeURIComponent(q)}` : '/api/students';
+
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        document.getElementById('studentTableBody').innerHTML = data.map(s => `
             <tr style="cursor:pointer" onclick="selectStudent('${s.mssv}', '${s.name}', '${s.class_name}', '${s.major}', ${s.gpa})">
                 <td><span class="badge bg-light text-dark border">${s.mssv}</span></td>
                 <td class="text-start fw-semibold text-primary">${s.name}</td>
                 <td>${s.class_name}</td><td>${s.major}</td>
                 <td><span class="badge ${s.gpa >= 5 ? 'bg-success' : (s.gpa > 0 ? 'bg-danger' : 'bg-secondary')} fs-6">${s.gpa}</span></td>
                 <td>
-                    <button class="action-btn btn-view" title="Xem/Nhập điểm chi tiết" onclick="goToGradesPage(event, '${s.mssv}', '${s.name}')"><i class="fa-solid fa-clipboard-list fs-5"></i></button>
-                    <button class="action-btn btn-delete" title="Xóa sinh viên" onclick="deleteStudent(event, '${s.mssv}')"><i class="fa-solid fa-trash-can fs-5"></i></button>
+                    <button class="action-btn btn-view" title="Xem điểm" onclick="goToGradesPage(event, '${s.mssv}', '${s.name}')"><i class="fa-solid fa-clipboard-list fs-5"></i></button>
+                    <button class="action-btn btn-delete" title="Xóa" onclick="deleteStudent(event, '${s.mssv}')"><i class="fa-solid fa-trash-can fs-5"></i></button>
                 </td>
             </tr>
         `).join('');
@@ -263,13 +285,24 @@
 
     window.onload = () => { loadSubjects(); loadStudents(); };
 
+    // Các hàm xóa bộ lọc
+    function clearStudentSearch() {
+        document.getElementById('searchStudent').value = '';
+        loadStudents();
+    }
+    
+    function clearSubjectSearch() {
+        document.getElementById('searchSubject').value = '';
+        loadSubjects();
+    }
+
     // ================= CHUYỂN HƯỚNG TRANG =================
     function goToGradesPage(e, mssv, name) {
         e.stopPropagation();
         window.location.href = `grades.html?mssv=${encodeURIComponent(mssv)}&name=${encodeURIComponent(name)}`;
     }
 
-    // ================= CRUD LOGIC (Giữ nguyên như cũ) =================
+    // ================= CRUD LOGIC =================
     function selectStudent(mssv, name, className, major, gpa) {
         currentEditMssv = mssv;
         document.getElementById('stMssv').value = mssv; document.getElementById('stName').value = name;

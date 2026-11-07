@@ -30,6 +30,18 @@
         .student-info-bar { background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%); color: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,.1); display: flex; justify-content: space-between; align-items: center;}
         .student-info-bar h4 { margin: 0; font-weight: 600; }
         .gpa-display { background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.4);}
+        
+        /* CSS DÀNH CHO THANH KÉO DUAL-THUMB SLIDER */
+        .range-slider { position: relative; height: 24px; display: flex; align-items: center; flex-grow: 1;}
+        .slider-track { position: absolute; width: 100%; height: 6px; background: #dee2e6; border-radius: 3px; z-index: 1;}
+        .range-slider input[type="range"] {
+            position: absolute; width: 100%; z-index: 2; pointer-events: none;
+            -webkit-appearance: none; appearance: none; background: transparent; 
+        }
+        .range-slider input[type="range"]::-webkit-slider-thumb {
+            pointer-events: auto; -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+            background: #0d6efd; cursor: pointer; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body>
@@ -68,14 +80,46 @@
                 </div>
             </div>
 
+            <!-- THANH TÌM KIẾM ĐIỂM BẰNG KÉO THẢ RANGE -->
+            <div class="bg-white p-3 rounded border shadow-sm mb-3">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-book"></i></span>
+                            <input type="text" id="filterSubName" class="form-control" placeholder="Tên môn học..." onkeypress="if(event.key === 'Enter') loadGradesData()">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="text-muted fw-bold small text-nowrap">Khoảng điểm:</span>
+                            <span class="badge bg-primary text-white" id="lblMin" style="width: 40px;">0.0</span>
+                            
+                            <!-- BỘ KÉO ĐIỂM KÉP -->
+                            <div class="range-slider mx-2">
+                                <div class="slider-track"></div>
+                                <input type="range" id="filterMin" min="0" max="10" step="0.1" value="0">
+                                <input type="range" id="filterMax" min="0" max="10" step="0.1" value="10">
+                            </div>
+
+                            <span class="badge bg-danger text-white" id="lblMax" style="width: 40px;">10.0</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button class="btn btn-sm btn-primary flex-grow-1" type="button" onclick="loadGradesData()"><i class="fa-solid fa-filter"></i> Lọc KQ</button>
+                        <button class="btn btn-sm btn-outline-danger" type="button" onclick="clearGradeFilter()" title="Xóa bộ lọc"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+            </div>
+
             <!-- GRADES TABLE -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold text-secondary"><i class="fa-solid fa-chart-line me-2"></i> Bảng Điểm Chi Tiết</h5>
-                    <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="addGradeRow()">
+                    <button class="btn btn-success btn-sm rounded-pill px-3" type="button" onclick="addGradeRow()">
                         <i class="fa-solid fa-plus me-1"></i> Thêm Điểm Môn
                     </button>
                 </div>
+
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle text-center mb-0">
@@ -105,6 +149,26 @@
     let allSubjects = [];
     let activeGradeStudentId = null;
 
+    // === LOGIC ĐỒNG BỘ 2 THANH KÉO (DUAL SLIDER) ===
+    const filterMin = document.getElementById('filterMin');
+    const filterMax = document.getElementById('filterMax');
+    const lblMin = document.getElementById('lblMin');
+    const lblMax = document.getElementById('lblMax');
+
+    function syncSliders() {
+        let min = parseFloat(filterMin.value);
+        let max = parseFloat(filterMax.value);
+        // Ngăn không cho Min kéo vượt qua Max
+        if (min > max) {
+            let tmp = min; min = max; max = tmp;
+            filterMin.value = min; filterMax.value = max;
+        }
+        lblMin.innerText = min.toFixed(1);
+        lblMax.innerText = max.toFixed(1);
+    }
+    filterMin.addEventListener('input', syncSliders);
+    filterMax.addEventListener('input', syncSliders);
+
     window.onload = async () => {
         const urlParams = new URLSearchParams(window.location.search);
         activeGradeStudentId = urlParams.get('mssv');
@@ -125,11 +189,31 @@
     };
 
     async function loadGradesData() {
-        const res = await fetch(`/api/grades/${activeGradeStudentId}`);
-        const grades = await res.json();
-        const tbody = document.getElementById('gradesTableBody');
-        tbody.innerHTML = '';
-        grades.forEach(g => tbody.insertAdjacentHTML('beforeend', createGradeRowHTML(g.subject_id, g.subject_name, g.qt, g.gk, g.ck, g.total, false)));
+        // Lấy dữ liệu từ các ô filter
+        const elSubName = document.getElementById('filterSubName');
+        const subName = elSubName ? elSubName.value : '';
+        const minVal = filterMin.value;
+        const maxVal = filterMax.value;
+        
+        let url = `/api/grades/${activeGradeStudentId}?`;
+        if (subName) url += `sub_name=${encodeURIComponent(subName)}&`;
+        if (minVal !== "") url += `min_score=${minVal}&`;
+        if (maxVal !== "") url += `max_score=${maxVal}&`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        document.getElementById('gradesTableBody').innerHTML = data.map(g => 
+            createGradeRowHTML(g.subject_id, g.subject_name, g.qt, g.gk, g.ck, g.total, false)
+        ).join('');
+    }
+
+    function clearGradeFilter() {
+        document.getElementById('filterSubName').value = "";
+        filterMin.value = 0;
+        filterMax.value = 10;
+        syncSliders();
+        loadGradesData();
     }
 
     async function refreshGpa() {
@@ -167,8 +251,8 @@
                     <td><input type="number" class="form-control form-control-sm table-input mx-auto ck-val" value="${formatScore(ck)}" step="0.1" min="0" max="10" placeholder="-"></td>
                     <td><span class="badge bg-warning text-dark">Đang sửa...</span></td>
                     <td>
-                        <button class="btn btn-sm btn-success rounded-circle me-1 shadow-sm" onclick="${saveFn}" title="Lưu"><i class="fa-solid fa-check"></i></button>
-                        <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="loadGradesData()" title="Hủy"><i class="fa-solid fa-xmark"></i></button>
+                        <button class="btn btn-sm btn-success rounded-circle me-1 shadow-sm" type="button" onclick="${saveFn}" title="Lưu"><i class="fa-solid fa-check"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary rounded-circle" type="button" onclick="loadGradesData()" title="Hủy"><i class="fa-solid fa-xmark"></i></button>
                     </td>
                 </tr>
             `;
@@ -179,8 +263,8 @@
                     <td>${formatScore(qt)}</td><td>${formatScore(gk)}</td><td>${formatScore(ck)}</td>
                     <td>${formatTotal(total)}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary rounded-circle me-1 border-0 shadow-none" onclick="editGradeRow(this, '${subId}', '${subName}', ${qt}, ${gk}, ${ck})" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-sm btn-outline-danger rounded-circle border-0 shadow-none" onclick="deleteGrade('${subId}')" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
+                        <button class="btn btn-sm btn-outline-primary rounded-circle me-1 border-0 shadow-none" type="button" onclick="editGradeRow(this, '${subId}', '${subName}', ${qt}, ${gk}, ${ck})" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-outline-danger rounded-circle border-0 shadow-none" type="button" onclick="deleteGrade('${subId}')" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>
             `;
