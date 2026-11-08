@@ -32,14 +32,11 @@
         /* CSS DÀNH CHO THANH KÉO DUAL-THUMB SLIDER */
         .range-slider { position: relative; height: 24px; display: flex; align-items: center; flex-grow: 1;}
         .slider-track { position: absolute; width: 100%; height: 6px; background: #dee2e6; border-radius: 3px; z-index: 1;}
-        .range-slider input[type="range"] {
-            position: absolute; width: 100%; z-index: 2; pointer-events: none;
-            -webkit-appearance: none; appearance: none; background: transparent; 
-        }
-        .range-slider input[type="range"]::-webkit-slider-thumb {
-            pointer-events: auto; -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
-            background: #0d6efd; cursor: pointer; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-        }
+        .range-slider input[type="range"] { position: absolute; width: 100%; z-index: 2; pointer-events: none; -webkit-appearance: none; appearance: none; background: transparent; }
+        .range-slider input[type="range"]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #0d6efd; cursor: pointer; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+        
+        /* Footer Styling */
+        .app-footer { background-color: #fff; padding: 15px 25px; border-top: 1px solid #edf2f9; color: #6c757d; font-size: 0.9rem; text-align: center; margin-top: auto; }
     </style>
 </head>
 <body>
@@ -59,7 +56,6 @@
         </header>
 
         <div class="content">
-            <!-- INFO BANNER -->
             <div class="student-info-bar">
                 <div>
                     <span class="badge bg-light text-primary mb-2 border-0">MSSV: <span id="gpMssv"></span></span>
@@ -70,7 +66,6 @@
                 </div>
             </div>
 
-            <!-- THANH TÌM KIẾM ĐIỂM BẰNG KÉO THẢ RANGE -->
             <div class="bg-white p-3 rounded border shadow-sm mb-3">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-3">
@@ -84,7 +79,6 @@
                             <span class="text-muted fw-bold small text-nowrap">Khoảng điểm:</span>
                             <span class="badge bg-primary text-white" id="lblMin" style="width: 40px;">0.0</span>
                             
-                            <!-- BỘ KÉO ĐIỂM KÉP -->
                             <div class="range-slider mx-2">
                                 <div class="slider-track"></div>
                                 <input type="range" id="filterMin" min="0" max="10" step="0.1" value="0">
@@ -101,7 +95,6 @@
                 </div>
             </div>
 
-            <!-- BẢNG ĐIỂM -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold text-secondary"><i class="fa-solid fa-chart-line me-2"></i> Bảng Điểm Chi Tiết</h5>
@@ -122,6 +115,12 @@
                 </div>
             </div>
         </div>
+
+        <!-- FOOTER BẢN QUYỀN -->
+        <footer class="app-footer">
+            &copy; <script>document.write(new Date().getFullYear())</script> <strong>Nguyễn Khánh Hưng</strong>. All rights reserved.
+        </footer>
+
     </div>
 </div>
 
@@ -130,7 +129,6 @@
     let allSubjects = [];
     let activeGradeStudentId = null;
 
-    // === LOGIC ĐỒNG BỘ 2 THANH KÉO (DUAL SLIDER) ===
     const filterMin = document.getElementById('filterMin');
     const filterMax = document.getElementById('filterMax');
     const lblMin = document.getElementById('lblMin');
@@ -139,10 +137,7 @@
     function syncSliders() {
         let min = parseFloat(filterMin.value);
         let max = parseFloat(filterMax.value);
-        if (min > max) {
-            let tmp = min; min = max; max = tmp;
-            filterMin.value = min; filterMax.value = max;
-        }
+        if (min > max) { let tmp = min; min = max; max = tmp; filterMin.value = min; filterMax.value = max; }
         lblMin.innerText = min.toFixed(1);
         lblMax.innerText = max.toFixed(1);
     }
@@ -163,7 +158,6 @@
         loadGradesData(); refreshGpa(); 
     };
 
-    // ================= GỌI API LỌC & LẤY ĐIỂM =================
     async function loadGradesData() {
         const subName = document.getElementById('filterSubName').value;
         const minVal = document.getElementById('filterMin').value;
@@ -182,8 +176,7 @@
     }
 
     function clearGradeFilter() {
-        document.getElementById('filterSubName').value = "";
-        filterMin.value = 0; filterMax.value = 10;
+        document.getElementById('filterSubName').value = ""; filterMin.value = 0; filterMax.value = 10;
         syncSliders(); loadGradesData();
     }
 
@@ -228,17 +221,14 @@
                     <td>${formatScore(qt)}</td><td>${formatScore(gk)}</td><td>${formatScore(ck)}</td>
                     <td>${formatTotal(total)}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary rounded-circle me-1 border-0 shadow-none" type="button" onclick="editGradeRow(this, '${subId}', '${subName}', ${qt}, ${gk}, ${ck})" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-outline-primary rounded-circle me-1 border-0 shadow-none" type="button" onclick="editGradeRow(this, '${subId}', '${subName}', ${qt}, gk, ck)" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn btn-sm btn-outline-danger rounded-circle border-0 shadow-none" type="button" onclick="deleteGrade('${subId}')" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>`;
         }
     }
 
-    function addGradeRow() {
-        if (allSubjects.length === 0) { alert("Chưa có môn học nào!"); return; }
-        document.getElementById('gradesTableBody').insertAdjacentHTML('afterbegin', createGradeRowHTML("", "", -1, -1, -1, null, true));
-    }
+    function addGradeRow() { if (allSubjects.length === 0) { alert("Chưa có môn học nào!"); return; } document.getElementById('gradesTableBody').insertAdjacentHTML('afterbegin', createGradeRowHTML("", "", -1, -1, -1, null, true)); }
     function editGradeRow(btn, subId, subName, qt, gk, ck) { btn.closest('tr').outerHTML = createGradeRowHTML(subId, subName, qt, gk, ck, null, true); }
     
     function getPayloadFromRow(tr) {
@@ -259,10 +249,7 @@
         if(res.ok) { loadGradesData(); refreshGpa(); } else { const err = await res.json(); alert(err.detail); }
     }
     async function deleteGrade(subId) {
-        if(confirm("Xóa điểm môn này?")) {
-            const res = await fetch(`/api/grades/${activeGradeStudentId}/${subId}`, { method: 'DELETE' });
-            if(res.ok) { loadGradesData(); refreshGpa(); }
-        }
+        if(confirm("Xóa điểm môn này?")) { const res = await fetch(`/api/grades/${activeGradeStudentId}/${subId}`, { method: 'DELETE' }); if(res.ok) { loadGradesData(); refreshGpa(); } }
     }
 </script>
 </body>

@@ -36,9 +36,11 @@
         .btn-view { color: #0d6efd; }
         .btn-delete { color: #dc3545; }
         
-        /* Hidden Tabs (Using Bootstrap Tab Logic but custom UI) */
         .tab-content { width: 100%; }
-        .search-box { max-width: 350px; } /* Mở rộng ô tìm kiếm để chứa nút */
+        .search-box { max-width: 350px; }
+        
+        /* Footer Styling */
+        .app-footer { background-color: #fff; padding: 15px 25px; border-top: 1px solid #edf2f9; color: #6c757d; font-size: 0.9rem; text-align: center; margin-top: auto; }
     </style>
 </head>
 <body>
@@ -61,7 +63,6 @@
 
     <!-- MAIN PANEL -->
     <div class="main-panel">
-        <!-- TOP NAVBAR -->
         <header class="top-navbar">
             <h5 class="mb-0 text-secondary" id="page-title">Quản lý Sinh Viên</h5>
             <div class="user-profile dropdown">
@@ -69,39 +70,21 @@
             </div>
         </header>
 
-        <!-- CONTENT AREA -->
         <div class="content">
             <div class="tab-content">
-                
                 <!-- TAB: SINH VIÊN -->
                 <div class="tab-pane fade show active" id="students" role="tabpanel">
                     <div class="row">
-                        <!-- Form -->
                         <div class="col-lg-3 col-md-4">
                             <div class="card">
                                 <div class="card-header text-primary"><i class="fa-solid fa-user-plus me-2"></i> <span id="studentFormTitle">Thêm Sinh Viên</span></div>
                                 <div class="card-body">
                                     <form id="studentForm" onsubmit="event.preventDefault();">
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" id="stMssv" placeholder="MSSV" required>
-                                            <label>Mã số sinh viên (MSSV)</label>
-                                        </div>
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" id="stName" placeholder="Họ và Tên" required>
-                                            <label>Họ và Tên</label>
-                                        </div>
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" id="stClass" placeholder="Lớp" required>
-                                            <label>Lớp học</label>
-                                        </div>
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" id="stMajor" placeholder="Ngành" required>
-                                            <label>Ngành học</label>
-                                        </div>
-                                        <div class="form-floating mb-4">
-                                            <input type="text" class="form-control bg-light" id="stGpa" placeholder="GPA" readonly>
-                                            <label>Điểm TB Tích Lũy (GPA)</label>
-                                        </div>
+                                        <div class="form-floating mb-3"><input type="text" class="form-control" id="stMssv" placeholder="MSSV" required><label>Mã số sinh viên (MSSV)</label></div>
+                                        <div class="form-floating mb-3"><input type="text" class="form-control" id="stName" placeholder="Họ và Tên" required><label>Họ và Tên</label></div>
+                                        <div class="form-floating mb-3"><input type="text" class="form-control" id="stClass" placeholder="Lớp" required><label>Lớp học</label></div>
+                                        <div class="form-floating mb-3"><input type="text" class="form-control" id="stMajor" placeholder="Ngành" required><label>Ngành học</label></div>
+                                        <div class="form-floating mb-4"><input type="text" class="form-control bg-light" id="stGpa" placeholder="GPA" readonly><label>Điểm TB Tích Lũy (GPA)</label></div>
                                         <div class="d-flex gap-2">
                                             <button type="button" class="btn btn-outline-secondary w-50" onclick="resetStudentForm()"><i class="fa-solid fa-rotate-left"></i> Làm mới</button>
                                             <button type="button" class="btn btn-primary w-50" onclick="saveStudent()"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
@@ -111,12 +94,10 @@
                             </div>
                         </div>
 
-                        <!-- Data Grid -->
                         <div class="col-lg-9 col-md-8">
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <span><i class="fa-solid fa-list me-2"></i> Danh Sách Sinh Viên</span>
-                                    <!-- Ô TÌM KIẾM CÓ NÚT BẤM -->
                                     <div class="input-group input-group-sm search-box">
                                         <input type="text" id="searchStudent" class="form-control" placeholder="Nhập MSSV hoặc Tên..." onkeypress="if(event.key === 'Enter') loadStudents()">
                                         <button class="btn btn-primary px-3" type="button" onclick="loadStudents()"><i class="fa-solid fa-magnifying-glass"></i> Tìm</button>
@@ -127,14 +108,7 @@
                                     <div class="table-responsive">
                                         <table class="table table-hover align-middle text-center mb-0">
                                             <thead>
-                                                <tr>
-                                                    <th>MSSV</th>
-                                                    <th class="text-start">Họ Tên</th>
-                                                    <th>Lớp</th>
-                                                    <th>Ngành</th>
-                                                    <th>GPA</th>
-                                                    <th>Thao Tác</th>
-                                                </tr>
+                                                <tr><th>MSSV</th><th class="text-start">Họ Tên</th><th>Lớp</th><th>Ngành</th><th>GPA</th><th>Thao Tác</th></tr>
                                             </thead>
                                             <tbody id="studentTableBody"></tbody>
                                         </table>
@@ -148,37 +122,18 @@
                 <!-- TAB: MÔN HỌC -->
                 <div class="tab-pane fade" id="subjects" role="tabpanel">
                     <div class="row">
-                        <!-- Form -->
                         <div class="col-lg-3 col-md-4">
                             <div class="card">
                                 <div class="card-header text-success"><i class="fa-solid fa-book-medical me-2"></i> <span id="subjectFormTitle">Thêm Môn Học</span></div>
                                 <div class="card-body">
                                     <form id="subjectForm" onsubmit="event.preventDefault();">
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" id="subId" placeholder="Mã Môn" required>
-                                            <label>Mã Môn</label>
-                                        </div>
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" id="subName" placeholder="Tên Môn" required>
-                                            <label>Tên Môn Học</label>
-                                        </div>
-                                        <div class="form-floating mb-3">
-                                            <input type="number" class="form-control" id="subCredits" placeholder="Tín Chỉ" required>
-                                            <label>Số Tín Chỉ</label>
-                                        </div>
+                                        <div class="form-floating mb-3"><input type="text" class="form-control" id="subId" placeholder="Mã Môn" required><label>Mã Môn</label></div>
+                                        <div class="form-floating mb-3"><input type="text" class="form-control" id="subName" placeholder="Tên Môn" required><label>Tên Môn Học</label></div>
+                                        <div class="form-floating mb-3"><input type="number" class="form-control" id="subCredits" placeholder="Tín Chỉ" required><label>Số Tín Chỉ</label></div>
                                         <div class="row g-2 mb-4">
-                                            <div class="col-4 form-floating">
-                                                <input type="number" class="form-control" id="subQt" value="20" required>
-                                                <label>% QT</label>
-                                            </div>
-                                            <div class="col-4 form-floating">
-                                                <input type="number" class="form-control" id="subGk" value="30" required>
-                                                <label>% GK</label>
-                                            </div>
-                                            <div class="col-4 form-floating">
-                                                <input type="number" class="form-control" id="subCk" value="50" required>
-                                                <label>% CK</label>
-                                            </div>
+                                            <div class="col-4 form-floating"><input type="number" class="form-control" id="subQt" value="20" required><label>% QT</label></div>
+                                            <div class="col-4 form-floating"><input type="number" class="form-control" id="subGk" value="30" required><label>% GK</label></div>
+                                            <div class="col-4 form-floating"><input type="number" class="form-control" id="subCk" value="50" required><label>% CK</label></div>
                                         </div>
                                         <div class="d-flex gap-2">
                                             <button type="button" class="btn btn-outline-secondary w-50" onclick="resetSubjectForm()"><i class="fa-solid fa-rotate-left"></i> Làm mới</button>
@@ -189,12 +144,10 @@
                             </div>
                         </div>
 
-                        <!-- Data Grid -->
                         <div class="col-lg-9 col-md-8">
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <span><i class="fa-solid fa-list me-2"></i> Danh Sách Môn Học</span>
-                                    <!-- Ô TÌM KIẾM MÔN HỌC -->
                                     <div class="input-group input-group-sm search-box">
                                         <input type="text" id="searchSubject" class="form-control" placeholder="Tìm Tên môn hoặc Tín chỉ..." onkeypress="if(event.key === 'Enter') loadSubjects()">
                                         <button class="btn btn-primary px-3" type="button" onclick="loadSubjects()"><i class="fa-solid fa-magnifying-glass"></i> Tìm</button>
@@ -205,15 +158,7 @@
                                     <div class="table-responsive">
                                         <table class="table table-hover align-middle text-center mb-0">
                                             <thead>
-                                                <tr>
-                                                    <th>Mã Môn</th>
-                                                    <th class="text-start">Tên Môn</th>
-                                                    <th>Tín Chỉ</th>
-                                                    <th>QT (%)</th>
-                                                    <th>GK (%)</th>
-                                                    <th>CK (%)</th>
-                                                    <th>Thao Tác</th>
-                                                </tr>
+                                                <tr><th>Mã Môn</th><th class="text-start">Tên Môn</th><th>Tín Chỉ</th><th>QT (%)</th><th>GK (%)</th><th>CK (%)</th><th>Thao Tác</th></tr>
                                             </thead>
                                             <tbody id="subjectTableBody"></tbody>
                                         </table>
@@ -223,34 +168,31 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
+        
+        <!-- FOOTER BẢN QUYỀN -->
+        <footer class="app-footer">
+            &copy; <script>document.write(new Date().getFullYear())</script> <strong>Nguyễn Khánh Hưng</strong>. All rights reserved.
+        </footer>
+
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // --- Cập nhật tiêu đề Top Navbar khi chuyển Tab ---
     document.querySelectorAll('.nav-link').forEach(tab => {
-        tab.addEventListener('shown.bs.tab', function (event) {
-            document.getElementById('page-title').innerText = event.target.innerText.trim();
-        });
+        tab.addEventListener('shown.bs.tab', function (event) { document.getElementById('page-title').innerText = event.target.innerText.trim(); });
     });
 
-    let currentEditMssv = null; 
-    let currentEditSubId = null; 
+    let currentEditMssv = null; let currentEditSubId = null; 
 
-    // ================= DATA LOADING =================
     async function loadSubjects() {
-        // Lấy giá trị ô tìm kiếm (nếu có, không có thì bỏ qua)
         const searchInput = document.getElementById('searchSubject');
         const q = searchInput ? searchInput.value : '';
         const url = q ? `/api/subjects?q=${encodeURIComponent(q)}` : '/api/subjects';
-        
         const res = await fetch(url);
         const data = await res.json();
-        
         document.getElementById('subjectTableBody').innerHTML = data.map(s => `
             <tr style="cursor:pointer" onclick="selectSubject('${s.id}', '${s.name}', ${s.credits}, ${s.w_qt}, ${s.w_gk}, ${s.w_ck})">
                 <td><span class="badge bg-light text-dark border">${s.id}</span></td>
@@ -265,10 +207,8 @@
         const searchInput = document.getElementById('searchStudent');
         const q = searchInput ? searchInput.value : '';
         const url = q ? `/api/students?q=${encodeURIComponent(q)}` : '/api/students';
-
         const res = await fetch(url);
         const data = await res.json();
-        
         document.getElementById('studentTableBody').innerHTML = data.map(s => `
             <tr style="cursor:pointer" onclick="selectStudent('${s.mssv}', '${s.name}', '${s.class_name}', '${s.major}', ${s.gpa})">
                 <td><span class="badge bg-light text-dark border">${s.mssv}</span></td>
@@ -285,54 +225,27 @@
 
     window.onload = () => { loadSubjects(); loadStudents(); };
 
-    // Các hàm xóa bộ lọc
-    function clearStudentSearch() {
-        document.getElementById('searchStudent').value = '';
-        loadStudents();
-    }
-    
-    function clearSubjectSearch() {
-        document.getElementById('searchSubject').value = '';
-        loadSubjects();
-    }
+    function clearStudentSearch() { document.getElementById('searchStudent').value = ''; loadStudents(); }
+    function clearSubjectSearch() { document.getElementById('searchSubject').value = ''; loadSubjects(); }
+    function goToGradesPage(e, mssv, name) { e.stopPropagation(); window.location.href = `grades.html?mssv=${encodeURIComponent(mssv)}&name=${encodeURIComponent(name)}`; }
 
-    // ================= CHUYỂN HƯỚNG TRANG =================
-    function goToGradesPage(e, mssv, name) {
-        e.stopPropagation();
-        window.location.href = `grades.html?mssv=${encodeURIComponent(mssv)}&name=${encodeURIComponent(name)}`;
-    }
-
-    // ================= CRUD LOGIC =================
     function selectStudent(mssv, name, className, major, gpa) {
         currentEditMssv = mssv;
         document.getElementById('stMssv').value = mssv; document.getElementById('stName').value = name;
         document.getElementById('stClass').value = className; document.getElementById('stMajor').value = major; document.getElementById('stGpa').value = gpa;
         document.getElementById('studentFormTitle').innerText = "Cập Nhật Sinh Viên";
     }
-
-    function resetStudentForm() {
-        currentEditMssv = null; document.getElementById('studentForm').reset();
-        document.getElementById('studentFormTitle').innerText = "Thêm Sinh Viên";
-    }
-
+    function resetStudentForm() { currentEditMssv = null; document.getElementById('studentForm').reset(); document.getElementById('studentFormTitle').innerText = "Thêm Sinh Viên"; }
     async function saveStudent() {
-        const payload = {
-            mssv: document.getElementById('stMssv').value, name: document.getElementById('stName').value,
-            class_name: document.getElementById('stClass').value, major: document.getElementById('stMajor').value
-        };
+        const payload = { mssv: document.getElementById('stMssv').value, name: document.getElementById('stName').value, class_name: document.getElementById('stClass').value, major: document.getElementById('stMajor').value };
         const method = currentEditMssv ? 'PUT' : 'POST';
         const url = currentEditMssv ? `/api/students/${currentEditMssv}` : '/api/students';
         const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-        if(res.ok) { loadStudents(); if(currentEditMssv) currentEditMssv = payload.mssv; } 
-        else { const err = await res.json(); alert(err.detail); }
+        if(res.ok) { loadStudents(); if(currentEditMssv) currentEditMssv = payload.mssv; } else { const err = await res.json(); alert(err.detail); }
     }
-
     async function deleteStudent(e, mssv) {
         e.stopPropagation();
-        if(confirm("Xóa sinh viên này (bao gồm cả điểm)?")) {
-            const res = await fetch(`/api/students/${mssv}`, { method: 'DELETE' });
-            if(res.ok) { resetStudentForm(); loadStudents(); }
-        }
+        if(confirm("Xóa sinh viên này (bao gồm cả điểm)?")) { const res = await fetch(`/api/students/${mssv}`, { method: 'DELETE' }); if(res.ok) { resetStudentForm(); loadStudents(); } }
     }
 
     function selectSubject(id, name, credits, qt, gk, ck) {
@@ -341,31 +254,17 @@
         document.getElementById('subQt').value = qt; document.getElementById('subGk').value = gk; document.getElementById('subCk').value = ck;
         document.getElementById('subjectFormTitle').innerText = "Cập Nhật Môn Học";
     }
-
-    function resetSubjectForm() {
-        currentEditSubId = null; document.getElementById('subjectForm').reset();
-        document.getElementById('subjectFormTitle').innerText = "Thêm Môn Học";
-    }
-
+    function resetSubjectForm() { currentEditSubId = null; document.getElementById('subjectForm').reset(); document.getElementById('subjectFormTitle').innerText = "Thêm Môn Học"; }
     async function saveSubject() {
-        const payload = {
-            id: document.getElementById('subId').value, name: document.getElementById('subName').value,
-            credits: Number.parseInt(document.getElementById('subCredits').value),
-            w_qt: Number.parseFloat(document.getElementById('subQt').value), w_gk: parseFloat(document.getElementById('subGk').value), w_ck: parseFloat(document.getElementById('subCk').value)
-        };
+        const payload = { id: document.getElementById('subId').value, name: document.getElementById('subName').value, credits: Number.parseInt(document.getElementById('subCredits').value), w_qt: Number.parseFloat(document.getElementById('subQt').value), w_gk: parseFloat(document.getElementById('subGk').value), w_ck: parseFloat(document.getElementById('subCk').value) };
         const method = currentEditSubId ? 'PUT' : 'POST';
         const url = currentEditSubId ? `/api/subjects/${currentEditSubId}` : '/api/subjects';
         const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-        if(res.ok) { loadSubjects(); if(!currentEditSubId) resetSubjectForm(); }
-        else { const err = await res.json(); alert(err.detail); }
+        if(res.ok) { loadSubjects(); if(!currentEditSubId) resetSubjectForm(); } else { const err = await res.json(); alert(err.detail); }
     }
-
     async function deleteSubject(e, id) {
         e.stopPropagation();
-        if(confirm("Xóa môn học này sẽ xóa toàn bộ điểm của sinh viên liên quan?")) {
-            const res = await fetch(`/api/subjects/${id}`, { method: 'DELETE' });
-            if(res.ok) { resetSubjectForm(); loadSubjects(); }
-        }
+        if(confirm("Xóa môn học này sẽ xóa toàn bộ điểm của sinh viên liên quan?")) { const res = await fetch(`/api/subjects/${id}`, { method: 'DELETE' }); if(res.ok) { resetSubjectForm(); loadSubjects(); } }
     }
 </script>
 </body>
