@@ -47,40 +47,30 @@
 <body>
 
 <div class="wrapper">
-    <!-- SIDEBAR -->
     <nav class="sidebar">
-        <div class="brand">
-            <i class="fa-solid fa-graduation-cap text-info me-2"></i> QL Đào Tạo
-        </div>
+        <div class="brand"><i class="fa-solid fa-graduation-cap text-info me-2"></i> QL Đào Tạo</div>
         <div class="nav flex-column mt-3">
-            <a class="nav-link" href="index.html">
-                <i class="fa-solid fa-arrow-left"></i> Quay lại Danh Sách
-            </a>
+            <a class="nav-link" href="index.html"><i class="fa-solid fa-arrow-left"></i> Quay lại Danh Sách</a>
         </div>
     </nav>
 
-    <!-- MAIN PANEL -->
     <div class="main-panel">
         <header class="top-navbar">
             <h5 class="mb-0 text-secondary">Hồ Sơ Điểm Sinh Viên</h5>
-            <div class="user-profile">
-                <span class="text-secondary fw-semibold"><i class="fa-solid fa-circle-user fs-4 align-middle me-2"></i> Admin</span>
-            </div>
+            <div class="user-profile"><span class="text-secondary fw-semibold"><i class="fa-solid fa-circle-user fs-4 align-middle me-2"></i> Admin</span></div>
         </header>
 
         <div class="content">
-            <!-- INFO BANNER -->
             <div class="student-info-bar">
                 <div>
                     <span class="badge bg-light text-primary mb-2 border-0">MSSV: <span id="gpMssv"></span></span>
-                    <h4><i class="fa-solid fa-user-graduate me-2"></i> <span id="gpName"></span></h4>
+                    <h4 class="mb-0 fw-bold"><i class="fa-solid fa-user-graduate me-2"></i> <span id="gpName"></span></h4>
                 </div>
-                <div class="gpa-display">
+                <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 30px; font-size: 1.2rem; font-weight: bold;">
                     GPA: <span id="gpGpa">...</span>
                 </div>
             </div>
 
-            <!-- THANH TÌM KIẾM ĐIỂM BẰNG KÉO THẢ RANGE -->
             <div class="bg-white p-3 rounded border shadow-sm mb-3">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-3">
@@ -94,7 +84,6 @@
                             <span class="text-muted fw-bold small text-nowrap">Khoảng điểm:</span>
                             <span class="badge bg-primary text-white" id="lblMin" style="width: 40px;">0.0</span>
                             
-                            <!-- BỘ KÉO ĐIỂM KÉP -->
                             <div class="range-slider mx-2">
                                 <div class="slider-track"></div>
                                 <input type="range" id="filterMin" min="0" max="10" step="0.1" value="0">
@@ -126,21 +115,21 @@
                             <thead>
                                 <tr>
                                     <th class="text-start ps-4" style="width: 25%">Môn Học</th>
-                                    <th>Quá Trình</th>
-                                    <th>Giữa Kỳ</th>
-                                    <th>Cuối Kỳ</th>
-                                    <th>Tổng Kết</th>
-                                    <th>Thao Tác</th>
+                                    <th>Quá Trình</th><th>Giữa Kỳ</th><th>Cuối Kỳ</th><th>Tổng Kết</th><th>Thao Tác</th>
                                 </tr>
                             </thead>
-                            <tbody id="gradesTableBody">
-                                <!-- JS DOM render -->
-                            </tbody>
+                            <tbody id="gradesTableBody"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- FOOTER BẢN QUYỀN -->
+        <footer class="app-footer">
+            &copy; <script>document.write(new Date().getFullYear())</script> <strong>Nguyễn Khánh Hưng</strong>. All rights reserved.
+        </footer>
+
     </div>
 </div>
 
@@ -149,7 +138,6 @@
     let allSubjects = [];
     let activeGradeStudentId = null;
 
-    // === LOGIC ĐỒNG BỘ 2 THANH KÉO (DUAL SLIDER) ===
     const filterMin = document.getElementById('filterMin');
     const filterMax = document.getElementById('filterMax');
     const lblMin = document.getElementById('lblMin');
@@ -173,18 +161,13 @@
         const urlParams = new URLSearchParams(window.location.search);
         activeGradeStudentId = urlParams.get('mssv');
         const studentName = urlParams.get('name');
-
-        if (!activeGradeStudentId) {
-            window.location.href = 'index.html';
-            return;
-        }
+        if (!activeGradeStudentId) { window.location.href = 'index.html'; return; }
 
         document.getElementById('gpMssv').innerText = activeGradeStudentId;
         document.getElementById('gpName').innerText = studentName;
 
         const resSub = await fetch('/api/subjects');
         allSubjects = await resSub.json();
-
         loadGradesData(); refreshGpa(); 
     };
 
@@ -202,7 +185,6 @@
 
         const res = await fetch(url);
         const data = await res.json();
-        
         document.getElementById('gradesTableBody').innerHTML = data.map(g => 
             createGradeRowHTML(g.subject_id, g.subject_name, g.qt, g.gk, g.ck, g.total, false)
         ).join('');
@@ -220,29 +202,24 @@
         const res = await fetch('/api/students');
         const students = await res.json();
         const currentStudent = students.find(s => s.mssv === activeGradeStudentId);
-        if(currentStudent) {
-            document.getElementById('gpGpa').innerText = currentStudent.gpa;
-        }
+        if(currentStudent) document.getElementById('gpGpa').innerText = currentStudent.gpa;
     }
 
     function formatScore(score) { return score === -1 ? '' : score; }
     function formatTotal(total) { 
         if (total === null) return '<span class="badge bg-secondary rounded-pill">Chưa đủ</span>';
-        const colorClass = total >= 5 ? 'bg-success' : 'bg-danger';
-        return `<span class="badge ${colorClass} rounded-pill fs-6">${total}</span>`; 
+        return `<span class="badge ${total >= 5 ? 'bg-success' : 'bg-danger'} rounded-pill fs-6">${total}</span>`; 
     }
 
     function createGradeRowHTML(subId, subName, qt, gk, ck, total, isEditMode) {
         if(isEditMode) {
             let subjectCol = `<td class="text-start ps-4"><input type="hidden" class="sub-val" value="${subId}"><span class="fw-semibold text-primary">${subName}</span></td>`;
             let saveFn = `updateGradeRow(this)`;
-            
             if(!subId) {
                 const options = allSubjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
                 subjectCol = `<td class="text-start ps-4"><select class="form-select sub-val shadow-sm border-primary">${options}</select></td>`;
                 saveFn = `addGradeRowAPI(this)`;
             }
-
             return `
                 <tr class="table-primary bg-opacity-10">
                     ${subjectCol}
@@ -254,8 +231,7 @@
                         <button class="btn btn-sm btn-success rounded-circle me-1 shadow-sm" type="button" onclick="${saveFn}" title="Lưu"><i class="fa-solid fa-check"></i></button>
                         <button class="btn btn-sm btn-outline-secondary rounded-circle" type="button" onclick="loadGradesData()" title="Hủy"><i class="fa-solid fa-xmark"></i></button>
                     </td>
-                </tr>
-            `;
+                </tr>`;
         } else {
             return `
                 <tr>
@@ -266,20 +242,13 @@
                         <button class="btn btn-sm btn-outline-primary rounded-circle me-1 border-0 shadow-none" type="button" onclick="editGradeRow(this, '${subId}', '${subName}', ${qt}, ${gk}, ${ck})" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn btn-sm btn-outline-danger rounded-circle border-0 shadow-none" type="button" onclick="deleteGrade('${subId}')" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
-                </tr>
-            `;
+                </tr>`;
         }
     }
 
-    function addGradeRow() {
-        if (allSubjects.length === 0) { alert("Chưa có môn học nào!"); return; }
-        document.getElementById('gradesTableBody').insertAdjacentHTML('afterbegin', createGradeRowHTML("", "", -1, -1, -1, null, true));
-    }
-
-    function editGradeRow(btn, subId, subName, qt, gk, ck) {
-        btn.closest('tr').outerHTML = createGradeRowHTML(subId, subName, qt, gk, ck, null, true);
-    }
-
+    function addGradeRow() { if (allSubjects.length === 0) { alert("Chưa có môn học nào!"); return; } document.getElementById('gradesTableBody').insertAdjacentHTML('afterbegin', createGradeRowHTML("", "", -1, -1, -1, null, true)); }
+    function editGradeRow(btn, subId, subName, qt, gk, ck) { btn.closest('tr').outerHTML = createGradeRowHTML(subId, subName, qt, gk, ck, null, true); }
+    
     function getPayloadFromRow(tr) {
         return {
             mssv: activeGradeStudentId, subject_id: tr.querySelector('.sub-val').value,
@@ -288,22 +257,17 @@
             ck: tr.querySelector('.ck-val').value === "" ? -1 : parseFloat(tr.querySelector('.ck-val').value)
         };
     }
-
+    
     async function addGradeRowAPI(btn) {
         const res = await fetch('/api/grades', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(getPayloadFromRow(btn.closest('tr'))) });
         if(res.ok) { loadGradesData(); refreshGpa(); } else { const err = await res.json(); alert(err.detail); }
     }
-
     async function updateGradeRow(btn) {
         const res = await fetch('/api/grades', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(getPayloadFromRow(btn.closest('tr'))) });
         if(res.ok) { loadGradesData(); refreshGpa(); } else { const err = await res.json(); alert(err.detail); }
     }
-
     async function deleteGrade(subId) {
-        if(confirm("Xóa điểm môn này?")) {
-            const res = await fetch(`/api/grades/${activeGradeStudentId}/${subId}`, { method: 'DELETE' });
-            if(res.ok) { loadGradesData(); refreshGpa(); }
-        }
+        if(confirm("Xóa điểm môn này?")) { const res = await fetch(`/api/grades/${activeGradeStudentId}/${subId}`, { method: 'DELETE' }); if(res.ok) { loadGradesData(); refreshGpa(); } }
     }
 </script>
 </body>

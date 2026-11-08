@@ -11,12 +11,8 @@ subjects_db, students_db, grades_db = generate_mock_data()
 
 # --- Models ---
 class Subject(BaseModel):
-    id: str
-    name: str
-    credits: int = Field(..., gt=0)
-    w_qt: float = Field(..., description="Phần trăm điểm quá trình")
-    w_gk: float = Field(..., description="Phần trăm điểm giữa kỳ")
-    w_ck: float = Field(..., description="Phần trăm điểm cuối kỳ")
+    id: str; name: str; credits: int = Field(..., gt=0)
+    w_qt: float; w_gk: float; w_ck: float
 
 class Student(BaseModel):
     mssv: str
@@ -47,7 +43,7 @@ def calculate_gpa(mssv: str) -> float:
     return round(total_score / total_credits, 2) if total_credits > 0 else 0.0
 
 # --- API Môn Học (Subjects) ---
-@app.get("/api/subjects")
+@app.get("/api/subjects", response_model=List[Subject])
 def get_subjects(q: Optional[str] = None):
     if not q: return subjects_db
     result = []
@@ -154,8 +150,9 @@ def _matches_grade_filters(
     ]
     lower_bound = min_score if min_score is not None else 0
     upper_bound = max_score if max_score is not None else 10
-    return any(lower_bound <= score <= upper_bound for score in scores)
-
+    
+    # Chỉ trả về True nếu có ít nhất một điểm lọt vào khoảng
+    return bool(scores) and any(lower_bound <= score <= upper_bound for score in scores)
 
 @app.get("/api/grades/{mssv}")
 def get_student_grades(
@@ -168,10 +165,10 @@ def get_student_grades(
     for g in grades_db:
         if g["mssv"] != mssv:
             continue
+        
         sub = next((s for s in subjects_db if s["id"] == g["subject_id"]), None)
-        if sub is None or not _matches_grade_filters(
-            g, sub["name"], sub_name, min_score, max_score
-        ):
+        # Bỏ qua nếu không tìm thấy môn, hoặc không thỏa mãn bộ lọc
+        if sub is None or not _matches_grade_filters(g, sub["name"], sub_name, min_score, max_score):
             continue
 
         g_data = g.copy()
