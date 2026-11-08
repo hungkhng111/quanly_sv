@@ -2,22 +2,16 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from typing import List, Optional
+from mock_data import generate_mock_data
 
 app = FastAPI(title="Hệ Thống Quản Lý Đào Tạo API")
 
 # --- In-memory Database ---
-subjects_db = []
-students_db = []
-grades_db = []
-
+subjects_db, students_db, grades_db = generate_mock_data()
 # --- Models ---
 class Subject(BaseModel):
-    id: str
-    name: str
-    credits: int = Field(..., gt=0)
-    w_qt: float = Field(..., description="Phần trăm điểm quá trình")
-    w_gk: float = Field(..., description="Phần trăm điểm giữa kỳ")
-    w_ck: float = Field(..., description="Phần trăm điểm cuối kỳ")
+    id: str; name: str; credits: int = Field(..., gt=0)
+    w_qt: float; w_gk: float; w_ck: float
 
 class Student(BaseModel):
     mssv: str
@@ -49,8 +43,13 @@ def calculate_gpa(mssv: str) -> float:
 
 # --- API Môn Học (Subjects) ---
 @app.get("/api/subjects", response_model=List[Subject])
-def get_subjects():
-    return subjects_db
+def get_subjects(q: Optional[str] = None):
+    if not q: return subjects_db
+    result = []
+    for s in subjects_db:
+        if q.lower() in s["name"].lower() or q in str(s["credits"]):
+            result.append(s)
+    return result
 
 @app.post("/api/subjects")
 def add_subject(sub: Subject):
@@ -87,9 +86,11 @@ def delete_subject(sub_id: str):
 
 # --- API Sinh Viên (Students) ---
 @app.get("/api/students")
-def get_students():
+def get_students(q: Optional[str] = None):
     result = []
     for st in students_db:
+        if q and q.lower() not in st["mssv"].lower() and q.lower() not in st["name"].lower():
+            continue
         st_data = st.copy()
         st_data["gpa"] = calculate_gpa(st["mssv"])
         result.append(st_data)
@@ -129,16 +130,51 @@ def delete_student(mssv: str):
     return {"message": "Xóa sinh viên thành công"}
 
 # --- API Điểm (Grades) ---
+
+def _matches_grade_filters(
+    grade: dict,
+    subject_name: str,
+    sub_name: Optional[str],
+    min_score: Optional[float],
+    max_score: Optional[float],
+) -> bool:
+    if sub_name and sub_name.lower() not in subject_name.lower():
+        return False
+    if min_score is None and max_score is None:
+        return True
+
+    scores = [
+        score
+        for score in (grade["qt"], grade["gk"], grade["ck"], grade.get("total"))
+        if score != -1 and score is not None
+    ]
+    lower_bound = min_score if min_score is not None else 0
+    upper_bound = max_score if max_score is not None else 10
+    
+    # Chỉ trả về True nếu có ít nhất một điểm lọt vào khoảng
+    return bool(scores) and any(lower_bound <= score <= upper_bound for score in scores)
+
 @app.get("/api/grades/{mssv}")
-def get_student_grades(mssv: str):
+def get_student_grades(
+    mssv: str, 
+    sub_name: Optional[str] = None, 
+    min_score: Optional[float] = None, 
+    max_score: Optional[float] = None
+):
     result = []
     for g in grades_db:
-        if g["mssv"] == mssv:
-            sub = next((s for s in subjects_db if s["id"] == g["subject_id"]), None)
-            if sub:
-                g_data = g.copy()
-                g_data["subject_name"] = sub["name"]
-                result.append(g_data)
+        if g["mssv"] != mssv:
+            continue
+        
+        sub = next((s for s in subjects_db if s["id"] == g["subject_id"]), None)
+        # Bỏ qua nếu không tìm thấy môn, hoặc không thỏa mãn bộ lọc
+        if sub is None or not _matches_grade_filters(g, sub["name"], sub_name, min_score, max_score):
+            continue
+
+        g_data = g.copy()
+        g_data["subject_name"] = sub["name"]
+        result.append(g_data)
+        
     return result
 
 @app.post("/api/grades")
