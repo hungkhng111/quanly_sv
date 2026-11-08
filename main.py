@@ -8,6 +8,7 @@ app = FastAPI(title="Hệ Thống Quản Lý Đào Tạo API")
 
 # --- In-memory Database ---
 subjects_db, students_db, grades_db = generate_mock_data()
+
 # --- Models ---
 class Subject(BaseModel):
     id: str; name: str; credits: int = Field(..., gt=0)
@@ -130,7 +131,6 @@ def delete_student(mssv: str):
     return {"message": "Xóa sinh viên thành công"}
 
 # --- API Điểm (Grades) ---
-
 def _matches_grade_filters(
     grade: dict,
     subject_name: str,
@@ -174,8 +174,8 @@ def get_student_grades(
         g_data = g.copy()
         g_data["subject_name"] = sub["name"]
         result.append(g_data)
-        
     return result
+
 
 @app.post("/api/grades")
 def add_grade(g: GradeInput):

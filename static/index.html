@@ -225,9 +225,22 @@
 
     window.onload = () => { loadSubjects(); loadStudents(); };
 
-    function clearStudentSearch() { document.getElementById('searchStudent').value = ''; loadStudents(); }
-    function clearSubjectSearch() { document.getElementById('searchSubject').value = ''; loadSubjects(); }
-    function goToGradesPage(e, mssv, name) { e.stopPropagation(); window.location.href = `grades.html?mssv=${encodeURIComponent(mssv)}&name=${encodeURIComponent(name)}`; }
+
+    function clearStudentSearch() {
+        document.getElementById('searchStudent').value = '';
+        loadStudents();
+    }
+    
+    function clearSubjectSearch() {
+        document.getElementById('searchSubject').value = '';
+        loadSubjects();
+    }
+
+    function goToGradesPage(e, mssv, name) {
+        e.stopPropagation();
+        window.location.href = `grades.html?mssv=${encodeURIComponent(mssv)}&name=${encodeURIComponent(name)}`;
+    }
+
 
     function selectStudent(mssv, name, className, major, gpa) {
         currentEditMssv = mssv;

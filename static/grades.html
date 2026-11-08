@@ -28,15 +28,20 @@
         .table-input { width: 80px; text-align: center; border-radius: 6px;}
         
         .student-info-bar { background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%); color: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,.1); display: flex; justify-content: space-between; align-items: center;}
+        .student-info-bar h4 { margin: 0; font-weight: 600; }
+        .gpa-display { background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; border: 1px solid rgba(255,255,255,0.4);}
         
         /* CSS DÀNH CHO THANH KÉO DUAL-THUMB SLIDER */
         .range-slider { position: relative; height: 24px; display: flex; align-items: center; flex-grow: 1;}
         .slider-track { position: absolute; width: 100%; height: 6px; background: #dee2e6; border-radius: 3px; z-index: 1;}
-        .range-slider input[type="range"] { position: absolute; width: 100%; z-index: 2; pointer-events: none; -webkit-appearance: none; appearance: none; background: transparent; }
-        .range-slider input[type="range"]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #0d6efd; cursor: pointer; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
-        
-        /* Footer Styling */
-        .app-footer { background-color: #fff; padding: 15px 25px; border-top: 1px solid #edf2f9; color: #6c757d; font-size: 0.9rem; text-align: center; margin-top: auto; }
+        .range-slider input[type="range"] {
+            position: absolute; width: 100%; z-index: 2; pointer-events: none;
+            -webkit-appearance: none; appearance: none; background: transparent; 
+        }
+        .range-slider input[type="range"]::-webkit-slider-thumb {
+            pointer-events: auto; -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+            background: #0d6efd; cursor: pointer; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body>
@@ -95,11 +100,15 @@
                 </div>
             </div>
 
+            <!-- GRADES TABLE -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold text-secondary"><i class="fa-solid fa-chart-line me-2"></i> Bảng Điểm Chi Tiết</h5>
-                    <button class="btn btn-success btn-sm rounded-pill px-3" type="button" onclick="addGradeRow()"><i class="fa-solid fa-plus me-1"></i> Thêm Môn</button>
+                    <button class="btn btn-success btn-sm rounded-pill px-3" type="button" onclick="addGradeRow()">
+                        <i class="fa-solid fa-plus me-1"></i> Thêm Điểm Môn
+                    </button>
                 </div>
+
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle text-center mb-0">
@@ -137,7 +146,11 @@
     function syncSliders() {
         let min = parseFloat(filterMin.value);
         let max = parseFloat(filterMax.value);
-        if (min > max) { let tmp = min; min = max; max = tmp; filterMin.value = min; filterMax.value = max; }
+        // Ngăn không cho Min kéo vượt qua Max
+        if (min > max) {
+            let tmp = min; min = max; max = tmp;
+            filterMin.value = min; filterMax.value = max;
+        }
         lblMin.innerText = min.toFixed(1);
         lblMax.innerText = max.toFixed(1);
     }
@@ -159,9 +172,11 @@
     };
 
     async function loadGradesData() {
-        const subName = document.getElementById('filterSubName').value;
-        const minVal = document.getElementById('filterMin').value;
-        const maxVal = document.getElementById('filterMax').value;
+        // Lấy dữ liệu từ các ô filter
+        const elSubName = document.getElementById('filterSubName');
+        const subName = elSubName ? elSubName.value : '';
+        const minVal = filterMin.value;
+        const maxVal = filterMax.value;
         
         let url = `/api/grades/${activeGradeStudentId}?`;
         if (subName) url += `sub_name=${encodeURIComponent(subName)}&`;
@@ -176,8 +191,11 @@
     }
 
     function clearGradeFilter() {
-        document.getElementById('filterSubName').value = ""; filterMin.value = 0; filterMax.value = 10;
-        syncSliders(); loadGradesData();
+        document.getElementById('filterSubName').value = "";
+        filterMin.value = 0;
+        filterMax.value = 10;
+        syncSliders();
+        loadGradesData();
     }
 
     async function refreshGpa() {
@@ -221,7 +239,7 @@
                     <td>${formatScore(qt)}</td><td>${formatScore(gk)}</td><td>${formatScore(ck)}</td>
                     <td>${formatTotal(total)}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary rounded-circle me-1 border-0 shadow-none" type="button" onclick="editGradeRow(this, '${subId}', '${subName}', ${qt}, gk, ck)" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-outline-primary rounded-circle me-1 border-0 shadow-none" type="button" onclick="editGradeRow(this, '${subId}', '${subName}', ${qt}, ${gk}, ${ck})" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn btn-sm btn-outline-danger rounded-circle border-0 shadow-none" type="button" onclick="deleteGrade('${subId}')" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>`;
